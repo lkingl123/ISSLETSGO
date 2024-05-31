@@ -1,10 +1,9 @@
-// LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from './firebaseConfig'; // Ensure this path is correct
 
-function LoginScreen() {
+function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -37,7 +36,14 @@ function LoginScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Login" onPress={handleLogin} />
+      <View style={styles.buttonContainer}>
+        <View style={styles.buttonWrapper}>
+          <Button title="Login" onPress={handleLogin} />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <Button title="Register" onPress={() => navigation.navigate('Register')} />
+        </View>
+      </View>
     </View>
   );
 }
@@ -60,6 +66,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  buttonWrapper: {
+    flex: 1,
+    marginHorizontal: 5,
   },
 });
 

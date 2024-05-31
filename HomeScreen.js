@@ -1,16 +1,20 @@
-// HomeScreen.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { auth } from './firebaseConfig'; // Ensure this path is correct
 
 function HomeScreen() {
-  const user = auth.currentUser;
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    setUser(currentUser);
+  }, []);
 
   return (
     <View style={styles.container}>
       {user ? (
         <View>
-          <Text style={styles.title}>Welcome, {user.displayName}!</Text>
+          <Text style={styles.title}>Welcome! {user.displayName}</Text>
         </View>
       ) : (
         <Text>No user information</Text>

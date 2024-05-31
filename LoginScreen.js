@@ -1,18 +1,17 @@
+// LoginScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { auth } from './firebaseConfig'; // Ensure this path is correct
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebaseConfig'; // Ensure this path is correct
 
-function LoginScreen({ navigation }) {
+function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
-        const user = userCredentials.user;
-        console.log('Logged in with:', user.email);
-        navigation.replace('Home');
+      .then(() => {
+        // Authentication successful
       })
       .catch((error) => {
         const errorMessage = error.message;
@@ -38,10 +37,7 @@ function LoginScreen({ navigation }) {
         value={password}
         onChangeText={setPassword}
       />
-      <Button
-        title="Login"
-        onPress={handleLogin}
-      />
+      <Button title="Login" onPress={handleLogin} />
     </View>
   );
 }

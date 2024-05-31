@@ -2,25 +2,33 @@ import React from 'react';
 import { createDrawerNavigator, DrawerItemList } from '@react-navigation/drawer';
 import HomeScreen from './HomeScreen';
 import SettingsScreen from './SettingsScreen';
-import { Button, View } from 'react-native';
-import { getAuth, signOut } from 'firebase/auth';
+import { Button, View, StyleSheet } from 'react-native';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebaseConfig'; // Ensure this path is correct
 
 const Drawer = createDrawerNavigator();
-const auth = getAuth();
 
 function CustomDrawerContent(props) {
   const handleLogout = () => {
-    signOut(auth).then(() => {
-      props.navigation.navigate('Login'); // Make sure 'Login' is accessible globally or adjust navigation
-    }).catch((error) => {
-      console.error('Error signing out: ', error);
-    });
+    signOut(auth)
+      .then(() => {
+
+      })
+      .catch((error) => {
+        console.error('Error signing out: ', error);
+      });
   };
 
+  const user = auth.currentUser;
+
   return (
-    <View>
+    <View style={styles.container}>
       <DrawerItemList {...props} />
-      <Button title="Logout" onPress={handleLogout} color="#d11a2a" />
+      {user && (
+        <View style={styles.logoutButton}>
+          <Button title="Logout" onPress={handleLogout} color="#d11a2a" />
+        </View>
+      )}
     </View>
   );
 }
@@ -33,5 +41,16 @@ function DrawerNavigator() {
     </Drawer.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  logoutButton: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+  },
+});
 
 export default DrawerNavigator;

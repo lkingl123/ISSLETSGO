@@ -37,10 +37,10 @@ function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonWrapper}>
+      <View style={[styles.buttonWrapper, styles.button]}>
           <Button title="Login" onPress={handleLogin} />
         </View>
-        <View style={styles.buttonWrapper}>
+        <View style={[styles.buttonWrapper, styles.button]}>
           <Button title="Register" onPress={() => navigation.navigate('Register')} />
         </View>
       </View>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
+    borderRadius: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -75,6 +75,10 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  button: {
+    borderRadius: 10,
+    overflow: 'hidden',
   },
 });
 

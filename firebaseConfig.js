@@ -22,7 +22,7 @@ function startTimeout() {
   clearTimeout(timeout);
   timeout = setTimeout(() => {
     auth.signOut(); // this will trigger onAuthStateChanged
-  }, 30000); // 90 seconds auto logout
+  }, 50000); // 90 seconds auto logout
 }
 
 // Listen for changes in auth state (login and logout events)

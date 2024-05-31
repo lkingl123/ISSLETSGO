@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from './firebaseConfig'; // Ensure this path is correct
+import Modal from 'react-native-modal';
 
 function RegisterScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -9,10 +10,22 @@ function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
+  const toggleModal = (message) => {
+    setModalMessage(message);
+    setIsModalVisible(!isModalVisible);
+  };
 
   const handleRegister = () => {
+    console.log("Register button pressed");
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      toggleModal("Please fill in all fields.");
+      return;
+    }
     if (password !== confirmPassword) {
-      Alert.alert("Password Mismatch", "Passwords do not match. Please try again.");
+      toggleModal("Passwords do not match. Please try again.");
       return;
     }
 
@@ -24,12 +37,16 @@ function RegisterScreen({ navigation }) {
         });
       })
       .then(() => {
-        Alert.alert("Registration Successful", "You have registered successfully");
-        navigation.navigate('Home'); // Ensure navigation to the home screen
+        toggleModal("Registration Successful. You have registered successfully.");
+        setTimeout(() => {
+          setIsModalVisible(false);
+          navigation.navigate('Home');
+        }, 2000); // Close modal after 2 seconds and navigate to Home
       })
       .catch((error) => {
+        console.log("Error during registration", error);
         const errorMessage = error.message;
-        Alert.alert("Registration Failed", errorMessage);
+        toggleModal(`Registration Failed: ${errorMessage}`);
       });
   };
 
@@ -71,13 +88,21 @@ function RegisterScreen({ navigation }) {
         onChangeText={setConfirmPassword}
       />
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonWrapper}>
+      <View style={[styles.buttonWrapper, styles.button]}>
           <Button title="Register" onPress={handleRegister} />
         </View>
-        <View style={styles.buttonWrapper}>
+        <View style={[styles.buttonWrapper, styles.button]}>
           <Button title="Back to Login" onPress={() => navigation.navigate('Login')} />
         </View>
       </View>
+      <Modal isVisible={isModalVisible}>
+        <View style={styles.modalContent}>
+          <Text>{modalMessage}</Text>
+          <TouchableOpacity onPress={() => setIsModalVisible(false)}>
+            <Text style={styles.closeModal}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -99,7 +124,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 5,
+    borderRadius: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -109,6 +134,22 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     flex: 1,
     marginHorizontal: 5,
+  },
+  button: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  closeModal: {
+    marginTop: 10,
+    color: 'blue',
   },
 });
 

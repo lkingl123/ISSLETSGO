@@ -10,7 +10,7 @@ function HomeScreen() {
     <View style={styles.container}>
       {user ? (
         <View>
-          <Text style={styles.title}>Welcome, {user.email}!</Text>
+          <Text style={styles.title}>Welcome, {user.displayName}!</Text>
         </View>
       ) : (
         <Text>No user information</Text>

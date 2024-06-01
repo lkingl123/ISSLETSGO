@@ -9,7 +9,7 @@ function HomeScreen() {
     <View style={styles.container}>
       {user ? (
         <View>
-          <Text style={styles.title}>Welcome, {user.displayName}!</Text>
+          <Text style={styles.title}>Welcome {user.displayName}!</Text>
         </View>
       ) : (
         <Text>No user information</Text>
@@ -20,10 +20,11 @@ function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    padding: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center', // Center the content vertically
+    marginTop: -5, //this is where i move the screen viewing 
+    },
   title: {
     fontSize: 24,
     marginBottom: 20,

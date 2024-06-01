@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { auth } from './firebaseConfig'; // Ensure this path is correct
-import { onAuthStateChanged } from 'firebase/auth';
+import { UserContext } from './UserContext';
 
 function HomeScreen() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { user } = useContext(UserContext);
 
   return (
     <View style={styles.container}>

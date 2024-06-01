@@ -2,9 +2,12 @@ import React from 'react';
 import { createDrawerNavigator, DrawerItemList } from '@react-navigation/drawer';
 import HomeScreen from './HomeScreen';
 import SettingsScreen from './SettingsScreen';
+import ManualFormScreen from './ManualFormScreen'; 
+import UploadFormScreen from './UploadFormScreen';
 import { Button, View, StyleSheet } from 'react-native';
 import { signOut } from 'firebase/auth';
-import { auth } from './firebaseConfig'; // Ensure this path is correct
+import { auth } from './firebaseConfig'; 
+
 
 const Drawer = createDrawerNavigator();
 
@@ -37,6 +40,8 @@ function DrawerNavigator() {
   return (
     <Drawer.Navigator drawerContent={(props) => <CustomDrawerContent {...props} />}>
       <Drawer.Screen name="Home" component={HomeScreen} />
+      <Drawer.Screen name="Manual Form" component={ManualFormScreen} />
+      <Drawer.Screen name="Upload Form" component={UploadFormScreen} />
       <Drawer.Screen name="Profile Settings" component={SettingsScreen} />
     </Drawer.Navigator>
   );

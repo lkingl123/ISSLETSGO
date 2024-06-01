@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './LoginScreen';
@@ -6,19 +6,18 @@ import RegisterScreen from './RegisterScreen';
 import HomeScreen from './HomeScreen';
 import DrawerNavigator from './DrawerNavigator';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { UserProvider, UserContext } from './UserContext'; // Ensure this path is correct
 
 const Stack = createStackNavigator();
 const auth = getAuth();
 
-function App() {
+function AppNavigator() {
+  const { user } = useContext(UserContext);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setIsAuthenticated(!!user);
-    });
-    return () => unsubscribe();
-  }, []);
+    setIsAuthenticated(!!user);
+  }, [user]);
 
   return (
     <NavigationContainer>
@@ -50,6 +49,14 @@ function App() {
         )}
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+function App() {
+  return (
+    <UserProvider>
+      <AppNavigator />
+    </UserProvider>
   );
 }
 

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { updateProfile } from 'firebase/auth';
 import { auth } from './firebaseConfig'; // Ensure this path is correct
 import Modal from 'react-native-modal';
 
-function RegisterScreen({ navigation }) {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+function SettingsScreen({ navigation }) {
+  const user = auth.currentUser;
+  const [firstName, setFirstName] = useState(user ? user.displayName.split(' ')[0] : '');
+  const [lastName, setLastName] = useState(user ? user.displayName.split(' ')[1] : '');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
 
@@ -18,41 +16,30 @@ function RegisterScreen({ navigation }) {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleRegister = () => {
-    console.log("Register button pressed");
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      toggleModal("Please fill in all fields.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      toggleModal("Passwords do not match. Please try again.");
+  const handleUpdateProfile = () => {
+    if (!firstName || !lastName) {
+      toggleModal("Please enter both first name and last name.");
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        return updateProfile(user, {
-          displayName: `${firstName} ${lastName}`,
-        });
-      })
-      .then(() => {
-        toggleModal("Registration Successful. You have registered successfully.");
-        setTimeout(() => {
-          setIsModalVisible(false);
-          navigation.navigate('Home');
-        }, 2000); // Close modal after 2 seconds and navigate to Home
-      })
-      .catch((error) => {
-        console.log("Error during registration", error);
-        const errorMessage = error.message;
-        toggleModal(`Registration Failed: ${errorMessage}`);
+    updateProfile(user, {
+      displayName: `${firstName} ${lastName}`,
+    }).then(() => {
+      toggleModal("Profile updated successfully.");
+      // Force re-render of HomeScreen
+      onAuthStateChanged(auth, (updatedUser) => {
+        if (updatedUser) {
+          auth.currentUser = updatedUser;
+        }
       });
+    }).catch((error) => {
+      toggleModal(`Error: ${error.message}`);
+    });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+      <Text style={styles.title}>Profile Settings</Text>
       <TextInput
         style={styles.input}
         placeholder="First Name"
@@ -65,34 +52,12 @@ function RegisterScreen({ navigation }) {
         value={lastName}
         onChangeText={setLastName}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={true}
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry={true}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
       <View style={styles.buttonContainer}>
-      <View style={[styles.buttonWrapper, styles.button]}>
-          <Button title="Register" onPress={handleRegister} />
+        <View style={[styles.buttonWrapper, styles.button]}>
+          <Button title="Update Profile" onPress={handleUpdateProfile} />
         </View>
         <View style={[styles.buttonWrapper, styles.button]}>
-          <Button title="Back to Login" onPress={() => navigation.navigate('Login')} />
+          <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
         </View>
       </View>
       <Modal isVisible={isModalVisible}>
@@ -153,4 +118,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default SettingsScreen;

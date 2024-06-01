@@ -14,23 +14,18 @@ const UploadFormScreen = () => {
   const [callingIndex, setCallingIndex] = useState(null);
 
   const toggleModal = (message) => {
-    console.log("Toggling modal with message:", message);
     setModalMessage(message);
     setIsModalVisible(!isModalVisible);
   };
 
   const handleFilePick = async () => {
     setLoading(true);
-    console.log("Picking file...");
     let result = await DocumentPicker.getDocumentAsync({
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
 
-    console.log("Document picker result:", result);
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const fileUri = result.assets[0].uri;
-      console.log("File URI:", fileUri);
       const response = await fetch(fileUri);
       const fileBlob = await response.blob();
       const reader = new FileReader();
@@ -55,7 +50,6 @@ const UploadFormScreen = () => {
             }
           });
 
-          console.log("Parsed JSON data:", jsonData);
 
           if (jsonData.length === 0) {
             throw new Error('The uploaded file is empty or incorrectly formatted.');
@@ -64,7 +58,6 @@ const UploadFormScreen = () => {
           setExcelData(jsonData);
           toggleModal("File uploaded successfully!");
         } catch (error) {
-          console.error("Error parsing file:", error);
           toggleModal(`Error: ${error.message}`);
         } finally {
           setLoading(false);
@@ -73,7 +66,6 @@ const UploadFormScreen = () => {
 
       reader.readAsArrayBuffer(fileBlob);
     } else {
-      console.log("File picking was canceled or no file URI.");
       setLoading(false);
     }
   };
@@ -88,8 +80,6 @@ const UploadFormScreen = () => {
     };
 
     setCallingIndex(index);
-    console.log("Initiating call with payload:", payload);
-
     try {
       const response = await initiateCall(payload);
       console.log("Call initiated successfully:", response);

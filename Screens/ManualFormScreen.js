@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, Text, Image, TextInput, Button, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
-import useCall from './useCall'; // Ensure this path is correct
-import { auth } from './firebaseConfig'; // Ensure this path is correct
+import useCall from '../useCall'; // Ensure this path is correct
+import { auth } from '../firebaseConfig'; // Ensure this path is correct
 
 const ManualFormScreen = ({ navigation }) => {
   const {

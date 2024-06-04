@@ -1,12 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { updateProfile } from 'firebase/auth';
-import { auth } from './firebaseConfig'; // Ensure this path is correct
+import { auth } from '../firebaseConfig'; // Ensure this path is correct
 import Modal from 'react-native-modal';
-import { UserContext } from './UserContext';
 
 function SettingsScreen({ navigation }) {
-  const { user, setUser } = useContext(UserContext);
+  const user = auth.currentUser;
   const [firstName, setFirstName] = useState(user ? user.displayName.split(' ')[0] : '');
   const [lastName, setLastName] = useState(user ? user.displayName.split(' ')[1] : '');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -27,7 +26,12 @@ function SettingsScreen({ navigation }) {
       displayName: `${firstName} ${lastName}`,
     }).then(() => {
       toggleModal("Profile updated successfully.");
-      setUser({ ...user, displayName: `${firstName} ${lastName}` });
+      // Force re-render of HomeScreen
+      onAuthStateChanged(auth, (updatedUser) => {
+        if (updatedUser) {
+          auth.currentUser = updatedUser;
+        }
+      });
     }).catch((error) => {
       toggleModal(`Error: ${error.message}`);
     });
@@ -74,7 +78,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    marginTop:-320,
   },
   title: {
     fontSize: 24,

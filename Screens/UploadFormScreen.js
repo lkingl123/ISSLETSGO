@@ -3,7 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, Button, TouchableOpacity } f
 import * as DocumentPicker from 'expo-document-picker';
 import ExcelJS from 'exceljs';
 import Modal from 'react-native-modal';
-import { initiateCall } from './Service';
+import { initiateCall } from '../Service';
 import { StyleSheet } from 'react-native';
 
 const UploadFormScreen = () => {

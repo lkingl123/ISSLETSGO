@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './firebaseConfig'; // Ensure this path is correct
+import { auth } from '../firebaseConfig'; // Ensure this path is correct
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -9,12 +9,19 @@ function LoginScreen({ navigation }) {
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        // Authentication successful
+      .then((userCredential) => {
+        const user = userCredential.user;
+        if (user) {
+          user.getIdToken().then((idToken) => {
+            console.log('User ID Token:', idToken);
+            navigation.navigate('Home');
+          }).catch((error) => {
+            console.error('Error getting ID token:', error);
+          });
+        }
       })
       .catch((error) => {
-        const errorMessage = error.message;
-        Alert.alert("Login Failed", errorMessage);
+        Alert.alert('Login Error', error.message);
       });
   };
 
@@ -37,7 +44,7 @@ function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
       <View style={styles.buttonContainer}>
-      <View style={[styles.buttonWrapper, styles.button]}>
+        <View style={[styles.buttonWrapper, styles.button]}>
           <Button title="Login" onPress={handleLogin} />
         </View>
         <View style={[styles.buttonWrapper, styles.button]}>
@@ -54,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    marginTop:-160,
+    marginTop: -160,
   },
   title: {
     fontSize: 24,

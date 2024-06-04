@@ -15,23 +15,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let timeout;
-
-function startTimeout() {
-  // Clears the previous timeout and sets a new one
-  clearTimeout(timeout);
-  timeout = setTimeout(() => {
-    auth.signOut(); // this will trigger onAuthStateChanged
-  }, 190000); // 90 seconds auto logout
-}
-
-// Listen for changes in auth state (login and logout events)
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    startTimeout(); // Start or reset the timeout whenever the user logs in
-  } else {
-    clearTimeout(timeout); // Ensure to clear the timeout if the user logs out manually or the session ends
-  }
-});
-
-export { auth, startTimeout };
+export { auth };

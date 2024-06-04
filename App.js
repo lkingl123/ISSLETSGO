@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from './LoginScreen';
-import RegisterScreen from './RegisterScreen';
-import HomeScreen from './HomeScreen';
+import LoginScreen from './Screens/LoginScreen';
+import RegisterScreen from './Screens/RegisterScreen';
+import HomeScreen from './Screens/HomeScreen';
 import DrawerNavigator from './DrawerNavigator';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { UserProvider, UserContext } from './UserContext'; // Ensure this path is correct

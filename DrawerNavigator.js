@@ -1,7 +1,7 @@
 import React from 'react';
 import { createDrawerNavigator, DrawerItemList } from '@react-navigation/drawer';
-import HomeScreen from './HomeScreen';
-import SettingsScreen from './SettingsScreen';
+import HomeScreen from './Screens/HomeScreen';
+import SettingsScreen from './Screens/ProfileSettingsScreen';
 import ManualFormScreen from './Screens/ManualFormScreen'; 
 import UploadFormScreen from './Screens/UploadFormScreen';
 import { Button, View, StyleSheet } from 'react-native';

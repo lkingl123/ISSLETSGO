@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { updateProfile } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Ensure this path is correct
 import Modal from 'react-native-modal';
@@ -68,22 +68,28 @@ function ProfileSettingsScreen({ navigation }) {
   );
 }
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    marginTop:-320,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
+    marginTop:-230,
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
     marginBottom: 10,
-    padding: 10,
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,

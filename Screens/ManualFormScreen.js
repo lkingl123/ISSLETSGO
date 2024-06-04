@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Image, TextInput, Button, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TextInput, Button, ActivityIndicator, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import Modal from 'react-native-modal';
 import useCall from '../useCall'; // Ensure this path is correct
 import { auth } from '../firebaseConfig'; // Ensure this path is correct
@@ -47,7 +47,7 @@ const ManualFormScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={[styles.headerContainer, styles.logoContainer]}>
         </View>
-        <View style={styles.body}>
+        <View style={[styles.body, isSingleCall && styles.singleCallBody]}>
           <View style={styles.options}>
             <Button title={isSingleCall ? 'Single Call' : 'Multiple Calls'} onPress={toggleCallMode} />
           </View>
@@ -136,6 +136,8 @@ const ManualFormScreen = ({ navigation }) => {
   );
 };
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
@@ -143,10 +145,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
+    flex: 1,
     padding: 20,
     alignItems: 'center',
-    justifyContent: 'center', // Center the content vertically
-    marginTop: -150, //this is where i move the screen viewing 
+    justifyContent: 'center',
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -165,7 +170,10 @@ const styles = StyleSheet.create({
   body: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center', // Center the content vertically
+    justifyContent: 'center',
+  },
+  singleCallBody: {
+    marginTop: -100,
   },
   options: {
     flexDirection: 'row',

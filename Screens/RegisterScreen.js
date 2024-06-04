@@ -1,76 +1,68 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { updateProfile } from 'firebase/auth';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Dimensions } from 'react-native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Ensure this path is correct
-import Modal from 'react-native-modal';
 
-function SettingsScreen({ navigation }) {
-  const user = auth.currentUser;
-  const [firstName, setFirstName] = useState(user ? user.displayName.split(' ')[0] : '');
-  const [lastName, setLastName] = useState(user ? user.displayName.split(' ')[1] : '');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+function RegisterScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const toggleModal = (message) => {
-    setModalMessage(message);
-    setIsModalVisible(!isModalVisible);
-  };
-
-  const handleUpdateProfile = () => {
-    if (!firstName || !lastName) {
-      toggleModal("Please enter both first name and last name.");
+  const handleRegister = () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Registration Error', 'Passwords do not match.');
       return;
     }
 
-    updateProfile(user, {
-      displayName: `${firstName} ${lastName}`,
-    }).then(() => {
-      toggleModal("Profile updated successfully.");
-      // Force re-render of HomeScreen
-      onAuthStateChanged(auth, (updatedUser) => {
-        if (updatedUser) {
-          auth.currentUser = updatedUser;
-        }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        Alert.alert('Registration Successful', 'User registered successfully!');
+        navigation.navigate('Login');
+      })
+      .catch((error) => {
+        Alert.alert('Registration Error', error.message);
       });
-    }).catch((error) => {
-      toggleModal(`Error: ${error.message}`);
-    });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile Settings</Text>
+      <Text style={styles.title}>Register</Text>
       <TextInput
         style={styles.input}
-        placeholder="First Name"
-        value={firstName}
-        onChangeText={setFirstName}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}
-        placeholder="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
+        placeholder="Password"
+        secureTextEntry={true}
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry={true}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
       <View style={styles.buttonContainer}>
         <View style={[styles.buttonWrapper, styles.button]}>
-          <Button title="Update Profile" onPress={handleUpdateProfile} />
+          <Button title="Register" onPress={handleRegister} />
         </View>
         <View style={[styles.buttonWrapper, styles.button]}>
-          <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
+          <Button title="Back to Login" onPress={() => navigation.navigate('Login')} />
         </View>
       </View>
-      <Modal isVisible={isModalVisible}>
-        <View style={styles.modalContent}>
-          <Text>{modalMessage}</Text>
-          <TouchableOpacity onPress={() => setIsModalVisible(false)}>
-            <Text style={styles.closeModal}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </View>
   );
 }
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -78,15 +70,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    marginTop: -160,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
+    marginTop:-100,
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
     marginBottom: 10,
-    padding: 10,
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
@@ -104,18 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
   },
-  modalContent: {
-    backgroundColor: 'white',
-    padding: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  closeModal: {
-    marginTop: 10,
-    color: 'blue',
-  },
 });
 
-export default SettingsScreen;
+export default RegisterScreen;

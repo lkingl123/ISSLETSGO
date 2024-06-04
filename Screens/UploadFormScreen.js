@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Button, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, Button, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import ExcelJS from 'exceljs';
 import Modal from 'react-native-modal';
 import { initiateCall } from '../Service';
-import { StyleSheet } from 'react-native';
 
 const UploadFormScreen = () => {
   const [excelData, setExcelData] = useState([]);
@@ -49,7 +48,6 @@ const UploadFormScreen = () => {
               });
             }
           });
-
 
           if (jsonData.length === 0) {
             throw new Error('The uploaded file is empty or incorrectly formatted.');
@@ -102,7 +100,7 @@ const UploadFormScreen = () => {
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <Button title="Pick an Excel file" onPress={handleFilePick} />
-        {loading && <ActivityIndicator size="large" color="#0000ff" />}
+        {loading && <ActivityIndicator size="large" color="#0000ff" marginTop="20" />}
         <ScrollView style={styles.dataContainer}>
           {excelData.map((item, index) => (
             <View key={index} style={styles.dataItem}>
@@ -137,6 +135,8 @@ const UploadFormScreen = () => {
   );
 };
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
@@ -147,7 +147,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     alignItems: 'center',
-    marginTop:10,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
@@ -155,13 +157,15 @@ const styles = StyleSheet.create({
   },
   dataContainer: {
     width: '100%',
+    marginTop: 10,
   },
   dataItem: {
     marginBottom: 10,
-    padding: 10,
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
+    backgroundColor: '#f9f9f9',
   },
   dataText: {
     fontSize: 16,

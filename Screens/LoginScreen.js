@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Dimensions } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Ensure this path is correct
 
@@ -55,6 +55,8 @@ function LoginScreen({ navigation }) {
   );
 }
 
+const { width, height } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -62,15 +64,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     marginTop: -160,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
     marginBottom: 10,
-    padding: 10,
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,

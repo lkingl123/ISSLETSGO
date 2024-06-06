@@ -14,7 +14,8 @@ const GOOGLE_CLIENT_ID = '648062377559-6fge85fbh1hbi6ja7j9qcpjarj9cjr4h.apps.goo
 function HomeScreen() {
   const { user } = useContext(UserContext);
   const [events, setEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eventModalVisible, setEventModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
   const [accessToken, setAccessToken] = useState(null);
@@ -135,54 +136,73 @@ function HomeScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleDayPress = (day) => {
+    setSelectedDate(day.dateString);
+    setEventModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       {user ? (
-        <View>
-          <Text style={styles.title}>Welcome {user.displayName}!</Text>
-          {!accessToken && <Button title="Connect to Google Calendar" onPress={() => promptAsync()} disabled={!request} />}
-          <View style={styles.headerContainer}>
-            <Text style={styles.headerTitle}>My Appointments</Text>
-            <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-              <Image source={require('../assets/circle-button.svg')} style={styles.addButtonImage} />
-            </TouchableOpacity>
+        <>
+          <View style={styles.fixedHeader}>
+            <Text style={styles.title}>Welcome {user.displayName}!</Text>
+            {!accessToken && <Button title="Connect to Google Calendar" onPress={() => promptAsync()} disabled={!request} />}
+            <View style={styles.headerContainer}>
+              <Text style={styles.headerTitle}>My Appointments</Text>
+              <View style={styles.headerActions}>
+                <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+                  <Image source={require('../assets/circle-button.svg')} style={styles.addButtonImage} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleLogout}>
+                  <Image source={require('../assets/logout.svg')} style={styles.logoutButtonImage} />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-          <Calendar
-            current={new Date().toISOString().split('T')[0]}
-            minDate={'2022-01-01'}
-            maxDate={'2024-12-31'}
-            markedDates={markedDates}
-            onDayPress={(day) => {
-              setSelectedDate(day.dateString);
-            }}
-            theme={{
-              backgroundColor: '#ffffff',
-              calendarBackground: '#1e1e1e',
-              textSectionTitleColor: '#b6c1cd',
-              selectedDayBackgroundColor: '#673ab7',
-              selectedDayTextColor: '#ffffff',
-              todayTextColor: '#ff5722',
-              dayTextColor: '#ffffff',
-              textDisabledColor: '#d9e1e8',
-              dotColor: '#00adf5',
-              selectedDotColor: '#ffffff',
-              arrowColor: '#ff5722',
-              monthTextColor: '#ffffff',
-              indicatorColor: '#ffffff',
-              textDayFontFamily: 'monospace',
-              textMonthFontFamily: 'monospace',
-              textDayHeaderFontFamily: 'monospace',
-              textDayFontWeight: '300',
-              textMonthFontWeight: 'bold',
-              textDayHeaderFontWeight: '300',
-              textDayFontSize: 16,
-              textMonthFontSize: 16,
-              textDayHeaderFontSize: 16,
-            }}
-          />
-          {selectedDate ? (
-            <ScrollView style={styles.eventList}>
-              <Text style={styles.dateTitle}>Events for {selectedDate}</Text>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.calendarContainer}>
+              <Calendar
+                current={new Date().toISOString().split('T')[0]}
+                minDate={'2022-01-01'}
+                maxDate={'2024-12-31'}
+                markedDates={markedDates}
+                onDayPress={handleDayPress}
+                onMonthChange={() => {
+                  setSelectedDate('');
+                }}
+                theme={{
+                  backgroundColor: '#ffffff',
+                  calendarBackground: '#1e1e1e',
+                  textSectionTitleColor: '#b6c1cd',
+                  selectedDayBackgroundColor: '#673ab7',
+                  selectedDayTextColor: '#ffffff',
+                  todayTextColor: '#ff5722',
+                  dayTextColor: '#ffffff',
+                  textDisabledColor: '#d9e1e8',
+                  dotColor: '#00adf5',
+                  selectedDotColor: '#ffffff',
+                  arrowColor: '#ff5722',
+                  monthTextColor: '#ffffff',
+                  indicatorColor: '#ffffff',
+                  textDayFontFamily: 'monospace',
+                  textMonthFontFamily: 'monospace',
+                  textDayHeaderFontFamily: 'monospace',
+                  textDayFontWeight: '300',
+                  textMonthFontWeight: 'bold',
+                  textDayHeaderFontWeight: '300',
+                  textDayFontSize: 16,
+                  textMonthFontSize: 16,
+                  textDayHeaderFontSize: 16,
+                }}
+              />
+            </View>
+          </ScrollView>
+          <Modal isVisible={eventModalVisible} onBackdropPress={() => setEventModalVisible(false)}>
+            <View style={styles.modalContent}>
+              <Text style={styles.dateTitle}>
+                Events for {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
+              </Text>
               {eventsForSelectedDate.length > 0 ? (
                 eventsForSelectedDate.map((event, index) => (
                   <View key={index} style={styles.eventItem}>
@@ -193,10 +213,8 @@ function HomeScreen() {
               ) : (
                 <Text style={styles.noEventsText}>No events for this date</Text>
               )}
-            </ScrollView>
-          ) : (
-            <Text style={styles.selectDateText}>Select a date to view events</Text>
-          )}
+            </View>
+          </Modal>
           <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
             <View style={styles.modalContent}>
               <TextInput
@@ -220,8 +238,7 @@ function HomeScreen() {
               <Button title="Add Event" onPress={() => addEventToCalendar(accessToken)} />
             </View>
           </Modal>
-          <Button title="Logout" onPress={handleLogout} />
-        </View>
+        </>
       ) : (
         <Text style={styles.noUserText}>No user information</Text>
       )}
@@ -232,10 +249,21 @@ function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
     backgroundColor: '#2b2b2b',
+  },
+  fixedHeader: {
+    backgroundColor: '#2b2b2b',
+    zIndex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   title: {
     fontSize: 24,
@@ -253,16 +281,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#ffffff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
+    color: '#673ab7',
   },
-  eventList: {
-    marginTop: 20,
+  calendarContainer: {
+    width: '100%',
+    maxWidth: 600,  // Increase this value to make the calendar wider
+    alignSelf: 'center',
+    backgroundColor: '#1e1e1e',
+  },
+  eventListContainer: {
+    marginTop: 10,
     width: '100%',
   },
   dateTitle: {
@@ -279,7 +317,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   eventTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -302,8 +340,12 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   addButtonImage: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
+    color: '#673ab7',
+    backgroundColor: '#ffffff',
+    padding: 10,
+    borderRadius: 5,
   },
   modalContent: {
     backgroundColor: 'white',
@@ -315,6 +357,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     marginBottom: 10,
     padding: 5,
+  },
+  logoutButtonImage: {
+    width: 30,
+    height: 30,
+    color: '#673ab7',
+    backgroundColor: '#ffffff',
+    padding: 10,
+    borderRadius: 5,
   },
 });
 

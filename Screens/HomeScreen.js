@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Alert, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, Button, Alert, ScrollView, TouchableOpacity, TextInput, Image, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserContext } from '../UserContext';
 import { Calendar } from 'react-native-calendars';
 import Modal from 'react-native-modal';
@@ -17,7 +18,9 @@ function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [eventModalVisible, setEventModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', start: new Date(), end: new Date() });
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -72,8 +75,8 @@ function HomeScreen() {
       if (data.items) {
         const formattedEvents = data.items.map((event) => ({
           title: event.summary,
-          start: event.start.date || event.start.dateTime.split('T')[0],
-          end: event.end.date || event.end.dateTime.split('T')[0],
+          start: event.start.dateTime || event.start.date,
+          end: event.end.dateTime || event.end.date,
         }));
         setEvents(formattedEvents);
       } else {
@@ -88,11 +91,11 @@ function HomeScreen() {
     const event = {
       summary: newEvent.title,
       start: {
-        dateTime: newEvent.start,
+        dateTime: newEvent.start.toISOString(),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
       end: {
-        dateTime: newEvent.end,
+        dateTime: newEvent.end.toISOString(),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
     };
@@ -117,11 +120,12 @@ function HomeScreen() {
     }
   };
 
-  const eventsForSelectedDate = events.filter(event => event.start === selectedDate);
+  const eventsForSelectedDate = events.filter(event => event.start.split('T')[0] === selectedDate);
 
   const markedDates = events.reduce((acc, event) => {
+    const eventDate = event.start.split('T')[0];
     const isFutureEvent = new Date(event.start) > new Date();
-    acc[event.start] = { marked: true, dotColor: isFutureEvent ? 'green' : 'blue' };
+    acc[eventDate] = { marked: true, dotColor: isFutureEvent ? 'green' : 'blue' };
     return acc;
   }, {});
 
@@ -139,6 +143,13 @@ function HomeScreen() {
   const handleDayPress = (day) => {
     setSelectedDate(day.dateString);
     setEventModalVisible(true);
+  };
+
+  const handleDateChange = (event, selectedDate, type) => {
+    const currentDate = selectedDate || newEvent[type];
+    setShowStartPicker(false);
+    setShowEndPicker(false);
+    setNewEvent({ ...newEvent, [type]: currentDate });
   };
 
   return (
@@ -207,7 +218,7 @@ function HomeScreen() {
                 eventsForSelectedDate.map((event, index) => (
                   <View key={index} style={styles.eventItem}>
                     <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventDates}>{`Start: ${event.start} End: ${event.end}`}</Text>
+                    <Text style={styles.eventDates}>{`Start: ${new Date(event.start).toLocaleString()} End: ${new Date(event.end).toLocaleString()}`}</Text>
                   </View>
                 ))
               ) : (
@@ -223,18 +234,28 @@ function HomeScreen() {
                 value={newEvent.title}
                 onChangeText={(text) => setNewEvent({ ...newEvent, title: text })}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Start Date (YYYY-MM-DD)"
-                value={newEvent.start}
-                onChangeText={(text) => setNewEvent({ ...newEvent, start: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="End Date (YYYY-MM-DD)"
-                value={newEvent.end}
-                onChangeText={(text) => setNewEvent({ ...newEvent, end: text })}
-              />
+              <TouchableOpacity onPress={() => setShowStartPicker(true)}>
+                <Text style={styles.dateText}>Start: {newEvent.start.toLocaleString()}</Text>
+              </TouchableOpacity>
+              {showStartPicker && (
+                <DateTimePicker
+                  value={newEvent.start}
+                  mode="datetime"
+                  display="default"
+                  onChange={(event, date) => handleDateChange(event, date, 'start')}
+                />
+              )}
+              <TouchableOpacity onPress={() => setShowEndPicker(true)}>
+                <Text style={styles.dateText}>End: {newEvent.end.toLocaleString()}</Text>
+              </TouchableOpacity>
+              {showEndPicker && (
+                <DateTimePicker
+                  value={newEvent.end}
+                  mode="datetime"
+                  display="default"
+                  onChange={(event, date) => handleDateChange(event, date, 'end')}
+                />
+              )}
               <Button title="Add Event" onPress={() => addEventToCalendar(accessToken)} />
             </View>
           </Modal>
@@ -254,10 +275,9 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     width: '100%',
     alignSelf: 'center',
-    backgroundColor: '#2b2b2b',
   },
   fixedHeader: {
-    backgroundColor: '#2b2b2b',
+    backgroundColor: '#1e1e1e',
     zIndex: 1,
     width: '100%',
   },
@@ -266,8 +286,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 20,
+    padding:8,
     textAlign: 'center',
     color: '#ffffff',
   },
@@ -282,7 +302,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     padding: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1e1e1e',
+
   },
   headerActions: {
     flexDirection: 'row',
@@ -291,12 +312,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#673ab7',
+    color: '#673ac7',
+    alignItems: 'center',
   },
   calendarContainer: {
     width: '100%',
-    maxWidth: 600,  // Increase this value to make the calendar wider
-    alignSelf: 'center',
     backgroundColor: '#1e1e1e',
   },
   eventListContainer: {
@@ -357,6 +377,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     marginBottom: 10,
     padding: 5,
+  },
+  dateText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#673ab7',
   },
   logoutButtonImage: {
     width: 30,

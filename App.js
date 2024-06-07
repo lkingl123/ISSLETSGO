@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect, useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -6,7 +7,7 @@ import RegisterScreen from './Screens/RegisterScreen';
 import HomeScreen from './Screens/HomeScreen';
 import DrawerNavigator from './DrawerNavigator';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { UserProvider, UserContext } from './UserContext'; // Ensure this path is correct
+import { UserProvider, UserContext } from './UserContext';
 
 const Stack = createStackNavigator();
 const auth = getAuth();
@@ -26,24 +27,24 @@ function AppNavigator() {
           <Stack.Screen 
             name="Drawer" 
             component={DrawerNavigator} 
-            options={{ headerShown: false }} // Drawer navigation typically does not have a header
+            options={{ headerShown: false }}
           />
         ) : (
           <>
             <Stack.Screen 
               name="Login" 
               component={LoginScreen} 
-              options={{ headerShown: true, title: 'Login' }} // Header shown with title 'Login'
+              options={{ headerShown: true, title: 'Login' }}
             />
             <Stack.Screen 
               name="Register" 
               component={RegisterScreen} 
-              options={{ headerShown: true, title: 'Register' }} // Header shown with title 'Register'
+              options={{ headerShown: true, title: 'Register' }}
             />
             <Stack.Screen 
               name="Home" 
               component={HomeScreen} 
-              options={{ headerShown: true, title: 'Home' }} // Header shown with title 'Home'
+              options={{ headerShown: true, title: 'Home' }}
             />
           </>
         )}

@@ -145,7 +145,7 @@ function HomeScreen() {
   const markedDates = events.reduce((acc, event) => {
     const eventDate = event.start.split('T')[0];
     const isFutureEvent = new Date(event.start) > new Date();
-    acc[eventDate] = { marked: true, dotColor: isFutureEvent ? 'green' : 'blue' };
+    acc[eventDate] = { marked: true, dotColor: isFutureEvent ? 'green' : 'red' };
     return acc;
   }, {});
 
@@ -177,7 +177,12 @@ function HomeScreen() {
       {user ? (
         <>
           <View style={styles.fixedHeader}>
-            {!accessToken && <Button title="Sync to Google Calendar" onPress={() => promptAsync()} disabled={!request} />}
+            {!accessToken && <Button
+      title="Sync to Google Calendar"
+      onPress={() => promptAsync()}
+      disabled={!request}
+      color="#00AEEF" // Using the color you expect
+    />}
             <View style={styles.headerContainer}>
               <Text style={styles.headerTitle}>My Appointments</Text>
               <View style={styles.headerActions}>

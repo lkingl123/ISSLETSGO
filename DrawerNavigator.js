@@ -4,6 +4,7 @@ import HomeScreen from './Screens/HomeScreen';
 import SettingsScreen from './Screens/ProfileSettingsScreen';
 import ManualFormScreen from './Screens/ManualFormScreen'; 
 import UploadFormScreen from './Screens/UploadFormScreen';
+import PaymentScreen from './Screens/PaymentScreen';
 import { Button, View, StyleSheet } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from './firebaseConfig'; 
@@ -43,6 +44,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="Manual Form" component={ManualFormScreen} />
       <Drawer.Screen name="Upload Form" component={UploadFormScreen} />
       <Drawer.Screen name="Profile Settings" component={SettingsScreen} />
+      <Drawer.Screen name="Payment Settings" component={PaymentScreen} />
     </Drawer.Navigator>
   );
 }

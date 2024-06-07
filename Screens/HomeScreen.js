@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePickerWeb from 'react-datetime-picker';
 import { UserContext } from '../UserContext';
 import { Calendar } from 'react-native-calendars';
 import Modal from 'react-native-modal';
@@ -74,6 +75,7 @@ function HomeScreen() {
       const data = await result.json();
       if (data.items) {
         const formattedEvents = data.items.map((event) => ({
+          id: event.id,
           title: event.summary,
           start: event.start.dateTime || event.start.date,
           end: event.end.dateTime || event.end.date,
@@ -112,9 +114,27 @@ function HomeScreen() {
         throw new Error(`Error adding event: ${response.statusText}`);
       }
       const result = await response.json();
-      setEvents([...events, { title: result.summary, start: result.start.dateTime, end: result.end.dateTime }]);
+      setEvents([...events, { id: result.id, title: result.summary, start: result.start.dateTime, end: result.end.dateTime }]);
       Alert.alert('Event added', `Event "${result.summary}" added to your calendar`);
       setModalVisible(false);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  const removeEventFromCalendar = async (eventId) => {
+    try {
+      const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error removing event: ${response.statusText}`);
+      }
+      setEvents(events.filter(event => event.id !== eventId));
+      Alert.alert('Event removed', 'The event has been removed from your calendar');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -157,75 +177,84 @@ function HomeScreen() {
       {user ? (
         <>
           <View style={styles.fixedHeader}>
-            <Text style={styles.title}>Welcome {user.displayName}!</Text>
-            {!accessToken && <Button title="Connect to Google Calendar" onPress={() => promptAsync()} disabled={!request} />}
+            {!accessToken && <Button title="Sync to Google Calendar" onPress={() => promptAsync()} disabled={!request} />}
             <View style={styles.headerContainer}>
               <Text style={styles.headerTitle}>My Appointments</Text>
               <View style={styles.headerActions}>
                 <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-                  <Image source={require('../assets/circle-button.svg')} style={styles.addButtonImage} />
+                  <Image source={require('../assets/add3.svg')} style={styles.addButtonImage} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleLogout}>
-                  <Image source={require('../assets/logout.svg')} style={styles.logoutButtonImage} />
+                  <Image source={require('../assets/logout2.svg')} style={styles.logoutButtonImage} />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.calendarContainer}>
-              <Calendar
-                current={new Date().toISOString().split('T')[0]}
-                minDate={'2022-01-01'}
-                maxDate={'2024-12-31'}
-                markedDates={markedDates}
-                onDayPress={handleDayPress}
-                onMonthChange={() => {
-                  setSelectedDate('');
-                }}
-                theme={{
-                  backgroundColor: '#ffffff',
-                  calendarBackground: '#1e1e1e',
-                  textSectionTitleColor: '#b6c1cd',
-                  selectedDayBackgroundColor: '#673ab7',
-                  selectedDayTextColor: '#ffffff',
-                  todayTextColor: '#ff5722',
-                  dayTextColor: '#ffffff',
-                  textDisabledColor: '#d9e1e8',
-                  dotColor: '#00adf5',
-                  selectedDotColor: '#ffffff',
-                  arrowColor: '#ff5722',
-                  monthTextColor: '#ffffff',
-                  indicatorColor: '#ffffff',
-                  textDayFontFamily: 'monospace',
-                  textMonthFontFamily: 'monospace',
-                  textDayHeaderFontFamily: 'monospace',
-                  textDayFontWeight: '300',
-                  textMonthFontWeight: 'bold',
-                  textDayHeaderFontWeight: '300',
-                  textDayFontSize: 16,
-                  textMonthFontSize: 16,
-                  textDayHeaderFontSize: 16,
-                }}
-              />
+            <View style={styles.calendarContainerWrapper}>
+              <View style={styles.calendarContainer}>
+                <Calendar
+                  current={new Date().toISOString().split('T')[0]}
+                  minDate={'2022-01-01'}
+                  maxDate={'2024-12-31'}
+                  markedDates={markedDates}
+                  onDayPress={handleDayPress}
+                  onMonthChange={() => {
+                    setSelectedDate('');
+                  }}
+                  theme={{
+                    backgroundColor: '#ffffff',
+                    calendarBackground: '#2e2e2e',
+                    textSectionTitleColor: '#b6c1cd',
+                    selectedDayBackgroundColor: '#673ab7',
+                    selectedDayTextColor: '#ffffff',
+                    todayTextColor: '#ff5722',
+                    dayTextColor: '#ffffff',
+                    textDisabledColor: '#f0f0f0',
+                    dotColor: '#ffffff', 
+                    selectedDotColor: '#ffffff',
+                    arrowColor: '#ff5722',
+                    monthTextColor: '#ffffff',
+                    indicatorColor: '#ffffff',
+                    textDayFontFamily: 'monospace',
+                    textMonthFontFamily: 'monospace',
+                    textDayHeaderFontFamily: 'monospace',
+                    textDayFontWeight: '300',
+                    textMonthFontWeight: 'bold',
+                    textDayHeaderFontWeight: '300',
+                    textDayFontSize: 16,
+                    textMonthFontSize: 16,
+                    textDayHeaderFontSize: 16,
+                  }}
+                  
+                />
+              </View>
             </View>
           </ScrollView>
           <Modal isVisible={eventModalVisible} onBackdropPress={() => setEventModalVisible(false)}>
-            <View style={styles.modalContent}>
-              <Text style={styles.dateTitle}>
-                Events for {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
-              </Text>
-              {eventsForSelectedDate.length > 0 ? (
-                eventsForSelectedDate.map((event, index) => (
+          <View style={styles.modalContent}>
+            <Text style={styles.dateTitle}>
+              {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </Text>
+            {eventsForSelectedDate.length > 0 ? (
+              eventsForSelectedDate.map((event, index) => {
+                const startTime = new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                const endTime = new Date(event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                return (
                   <View key={index} style={styles.eventItem}>
                     <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventDates}>{`Start: ${new Date(event.start).toLocaleString()} End: ${new Date(event.end).toLocaleString()}`}</Text>
+                    <Text style={styles.eventTimes}>{`${startTime} - ${endTime}`}</Text>
+                    <TouchableOpacity onPress={() => removeEventFromCalendar(event.id)}>
+                      <Image source={require('../assets/remove.svg')} style={styles.removeButtonImage} />
+                    </TouchableOpacity>
                   </View>
-                ))
-              ) : (
-                <Text style={styles.noEventsText}>No events for this date</Text>
-              )}
-            </View>
-          </Modal>
+                );
+              })
+            ) : (
+              <Text style={styles.noEventsText}>No events for this date</Text>
+            )}
+          </View>
+        </Modal>
           <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
             <View style={styles.modalContent}>
               <TextInput
@@ -238,23 +267,43 @@ function HomeScreen() {
                 <Text style={styles.dateText}>Start: {newEvent.start.toLocaleString()}</Text>
               </TouchableOpacity>
               {showStartPicker && (
-                <DateTimePicker
-                  value={newEvent.start}
-                  mode="datetime"
-                  display="default"
-                  onChange={(event, date) => handleDateChange(event, date, 'start')}
-                />
+                Platform.OS === 'web' ? (
+                  <DateTimePickerWeb
+                    onChange={(date) => handleDateChange(null, date, 'start')}
+                    value={newEvent.start}
+                    disableClock={true}
+                    clearIcon={null}
+                    calendarIcon={null}
+                  />
+                ) : (
+                  <DateTimePicker
+                    value={newEvent.start}
+                    mode="time"
+                    display="spinner"
+                    onChange={(event, date) => handleDateChange(event, date, 'start')}
+                  />
+                )
               )}
               <TouchableOpacity onPress={() => setShowEndPicker(true)}>
                 <Text style={styles.dateText}>End: {newEvent.end.toLocaleString()}</Text>
               </TouchableOpacity>
               {showEndPicker && (
-                <DateTimePicker
-                  value={newEvent.end}
-                  mode="datetime"
-                  display="default"
-                  onChange={(event, date) => handleDateChange(event, date, 'end')}
-                />
+                Platform.OS === 'web' ? (
+                  <DateTimePickerWeb
+                    onChange={(date) => handleDateChange(null, date, 'end')}
+                    value={newEvent.end}
+                    disableClock={true}
+                    clearIcon={null}
+                    calendarIcon={null}
+                  />
+                ) : (
+                  <DateTimePicker
+                    value={newEvent.end}
+                    mode="time"
+                    display="spinner"
+                    onChange={(event, date) => handleDateChange(event, date, 'end')}
+                  />
+                )
               )}
               <Button title="Add Event" onPress={() => addEventToCalendar(accessToken)} />
             </View>
@@ -277,9 +326,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   fixedHeader: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#2e2e2e', // Slightly lighter background color
     zIndex: 1,
     width: '100%',
+    borderRadius:10, // top header side border radius
   },
   scrollContent: {
     flexGrow: 1,
@@ -287,7 +337,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    padding:8,
+    padding: 8,
     textAlign: 'center',
     color: '#ffffff',
   },
@@ -301,9 +351,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: 10,
-    backgroundColor: '#1e1e1e',
-
+    padding: 5,
+    backgroundColor: '#2e2e2e', // Slightly lighter background color
+    borderTopLeftRadius:10,
+    borderTopRightRadius:10,
   },
   headerActions: {
     flexDirection: 'row',
@@ -312,12 +363,19 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#673ac7',
+    color: '#00AEEF',
     alignItems: 'center',
+    marginLeft:70,
+  },
+  calendarContainerWrapper: {
+    width: '100%',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius:10, // Curved corners
+    overflow: 'hidden', // Ensures children are clipped to the container's bounds
+    marginTop:-20,
   },
   calendarContainer: {
-    width: '100%',
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#333333', // Slightly lighter background color
   },
   eventListContainer: {
     marginTop: 10,
@@ -335,6 +393,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: '#3e3e3e',
     borderRadius: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   eventTitle: {
     fontSize: 14,
@@ -350,6 +411,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'gray',
   },
+  eventTimes: {
+    fontSize: 14,
+    color: '#ffffff',
+  },  
+  dateTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#3e3e3e',
+  },
   selectDateText: {
     textAlign: 'center',
     fontSize: 16,
@@ -362,10 +434,14 @@ const styles = StyleSheet.create({
   addButtonImage: {
     width: 30,
     height: 30,
-    color: '#673ab7',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#2e2e2e',
     padding: 10,
     borderRadius: 5,
+  },
+  removeButtonImage: {
+    width: 20,
+    height: 20,
+    // Add your own style or leave it for the SVG path
   },
   modalContent: {
     backgroundColor: 'white',
@@ -386,8 +462,7 @@ const styles = StyleSheet.create({
   logoutButtonImage: {
     width: 30,
     height: 30,
-    color: '#673ab7',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#2e2e2e',
     padding: 10,
     borderRadius: 5,
   },
